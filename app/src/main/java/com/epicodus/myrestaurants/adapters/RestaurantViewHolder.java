@@ -22,7 +22,7 @@ import butterknife.ButterKnife;
 /**
  * Created by Guest on 5/2/16.
  */
-public class RestaurantViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
+public class RestaurantViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder  {
     private static final int MAX_WIDTH = 200;
     private static final int MAX_HEIGHT = 200;
         @Bind(R.id.restaurantImageView) ImageView mRestaurantImageView;
@@ -64,11 +64,17 @@ public class RestaurantViewHolder extends RecyclerView.ViewHolder implements Ite
 
     @Override
     public void onItemSelected() {
-        //  Will add code for animations here later.
+        itemView.animate()
+                .alpha(0.7f)
+                .scaleX(0.9f)
+                .scaleY(0.9f)
+                .setDuration(500);
     }
 
     @Override
     public void onItemClear() {
-        //  Will add code for removing animations here later.
-    }
+        itemView.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f);    }
 }
