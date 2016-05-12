@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.epicodus.myrestaurants.Constants;
 import com.epicodus.myrestaurants.R;
@@ -61,6 +62,7 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
             public void onSuccess(Map<String, Object> result){
                String uid = result.get("uid").toString();
                createUserInFirebaseHelper(name, email, uid);
+               Toast.makeText(CreateAccountActivity.this, "Account Created", Toast.LENGTH_SHORT).show();
            }
 
             @Override

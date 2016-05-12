@@ -1,7 +1,9 @@
 package com.epicodus.myrestaurants.ui;
 
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,68 +16,52 @@ import com.epicodus.myrestaurants.R;
 import com.epicodus.myrestaurants.adapters.FirebaseRestaurantListAdapter;
 import com.epicodus.myrestaurants.adapters.OnStartDragListener;
 import com.epicodus.myrestaurants.models.Restaurant;
+import com.epicodus.myrestaurants.util.OnRestaurantSelectedListener;
 import com.epicodus.myrestaurants.util.SimpleItemTouchHelperCallback;
 import com.firebase.client.Firebase;
 import com.firebase.client.Query;
+
+import org.parceler.Parcels;
+
+import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
 
-public class SavedRestaurantListActivity extends AppCompatActivity implements OnStartDragListener {
-    private Query mQuery;
-    private Firebase mFirebaseRestaurantsRef;
-    private FirebaseRestaurantListAdapter mAdapter;
-    private SharedPreferences mSharedPreferences;
-    private ItemTouchHelper mItemTouchHelper;
-
-    @Bind(R.id.recyclerView)
-    RecyclerView mRecyclerView;
+public class SavedRestaurantListActivity extends AppCompatActivity implements OnRestaurantSelectedListener {
+    private Integer mPosition;
+    ArrayList<Restaurant> mRestaurants;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_restaurants);
-        ButterKnife.bind(this);
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mFirebaseRestaurantsRef = new Firebase(Constants.FIREBASE_URL_RESTAURANTS);
-
-        setUpFirebaseQuery();
-        setUpRecyclerView();
-    }
-
-    private void setUpFirebaseQuery() {
-        String userUid = mSharedPreferences.getString(Constants.KEY_UID, null);
-        String location = mFirebaseRestaurantsRef.child(userUid).toString();
-        mQuery = new Firebase(location).orderByChild("index");
-
-    }
-
-    private void setUpRecyclerView() {
-        mAdapter = new FirebaseRestaurantListAdapter(mQuery, Restaurant.class, this);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(mAdapter);
-        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mAdapter);
-        mItemTouchHelper = new ItemTouchHelper(callback);
-        mItemTouchHelper.attachToRecyclerView(mRecyclerView);
+        if (savedInstanceState != null) {
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                mPosition = savedInstanceState.getInt(Constants.EXTRA_KEY_POSITION);
+                mRestaurants = Parcels.unwrap(savedInstanceState.getParcelable(Constants.EXTRA_KEY_RESTAURANTS));
+                Intent intent = new Intent(this, RestaurantDetailActivity.class);
+                intent.putExtra(Constants.EXTRA_KEY_POSITION, mPosition.toString());
+                intent.putExtra(Constants.EXTRA_KEY_RESTAURANTS, Parcels.wrap(mRestaurants));
+                startActivity(intent);
+            }
+        }
+        setContentView(R.layout.activity_saved_restaurant_list);
     }
 
     @Override
-    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
-        mItemTouchHelper.startDrag(viewHolder);
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
-        String uid = mSharedPreferences.getString(Constants.KEY_UID, null);
-        for (Restaurant restaurant : mAdapter.getItems()) {
-            String pushID = restaurant.getPushId();
-            restaurant.setIndex(Integer.toString(mAdapter.getItems().indexOf(restaurant)));
-            mFirebaseRestaurantsRef.child(uid)
-                    .child(pushID)
-                    .setValue(restaurant);
+    protected void onSaveInstanceState(Bundle outState) {
+        if (mPosition != null && mRestaurants != null) {
+            outState.putInt(Constants.EXTRA_KEY_POSITION, Integer.valueOf(mPosition));
+            outState.putParcelable(Constants.EXTRA_KEY_RESTAURANTS, Parcels.wrap(mRestaurants));
+            super.onSaveInstanceState(outState);
         }
     }
 
-}
+    @Override
+    public void onRestaurantSelected(Integer position, ArrayList<Restaurant> restaurants) {
+        mPosition = position;
+        mRestaurants = restaurants;
+    }
 
+}

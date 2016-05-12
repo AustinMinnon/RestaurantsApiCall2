@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
-                mWelcomeTextView.setText("Welcome, " + user.getName() + ", to");
+                mWelcomeTextView.setText("Welcome, " + user.getName() + " to");
             }
 
             @Override
